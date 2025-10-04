@@ -8,8 +8,19 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(connectionString));
+// ✅ CONFIGURACIÓN PARA PRODUCCIÓN Y DESARROLLO
+if (builder.Environment.IsProduction())
+{
+    // PostgreSQL para producción (Render)
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseNpgsql(connectionString));
+}
+else
+{
+    // SQLite para desarrollo local
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseSqlite(connectionString));
+}
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -38,15 +49,24 @@ builder.Services.AddSession(options =>
     options.Cookie.Name = ".PortalAcademico.Session";
 });
 
+// ✅ REGISTRAR SERVICIO DE CACHE
 builder.Services.AddScoped<PortalAcademico.Services.ICacheService, PortalAcademico.Services.CacheService>();
 
 var app = builder.Build();
 
-// Seed data inicial
+// ✅ SEED DATA INICIAL (Solo si la BD está vacía)
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    await SeedData.Initialize(services);
+    try
+    {
+        await SeedData.Initialize(services);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Error al ejecutar seed data");
+    }
 }
 
 // Configure the HTTP request pipeline.
@@ -57,6 +77,7 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseExceptionHandler("/Home/Error");
+    // ✅ HSTS para producción
     app.UseHsts();
 }
 
