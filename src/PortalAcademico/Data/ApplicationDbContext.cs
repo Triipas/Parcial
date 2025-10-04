@@ -26,15 +26,18 @@ namespace PortalAcademico.Data
                     .IsUnique()
                     .HasDatabaseName("IX_Curso_Codigo_Unique");
 
-                // Restricción: Créditos > 0
-                entity.HasCheckConstraint("CK_Curso_Creditos", "[Creditos] > 0");
-
-                // Restricción: HorarioInicio < HorarioFin
-                entity.ToTable(t => 
-                    t.HasCheckConstraint("CK_Curso_Horario", "[HorarioInicio] < [HorarioFin]"));
-
-                // Restricción: CupoMaximo > 0
-                entity.HasCheckConstraint("CK_Curso_CupoMaximo", "[CupoMaximo] > 0");
+                // Configurar tabla con restricciones
+                entity.ToTable(t =>
+                {
+                    // Restricción: Créditos > 0
+                    t.HasCheckConstraint("CK_Curso_Creditos", "[Creditos] > 0");
+                    
+                    // Restricción: HorarioInicio < HorarioFin
+                    t.HasCheckConstraint("CK_Curso_Horario", "[HorarioInicio] < [HorarioFin]");
+                    
+                    // Restricción: CupoMaximo > 0
+                    t.HasCheckConstraint("CK_Curso_CupoMaximo", "[CupoMaximo] > 0");
+                });
             });
 
             // Configuración de Matricula
