@@ -1,0 +1,207 @@
+@model PortalAcademico.Models.Curso
+
+@{
+    ViewData["Title"] = "Detalle del Curso";
+    var cuposDisponibles = Model.CupoMaximo - Model.Matriculas.Count;
+    var porcentajeOcupacion = Model.CupoMaximo > 0 ? (int)((Model.Matriculas.Count / (double)Model.CupoMaximo) * 100) : 0;
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Catalogo">Catálogo</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">@Model.Codigo</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row">
+        <!-- Columna principal -->
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <span class="badge bg-light text-primary">@Model.Codigo</span>
+                        @Model.Nombre
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5><i class="bi bi-info-circle"></i> Información General</h5>
+                            <table class="table table-sm">
+                                <tbody>
+                                    <tr>
+                                        <th width="40%"><i class="bi bi-star-fill text-warning"></i> Créditos:</th>
+                                        <td><strong>@Model.Creditos</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <th><i class="bi bi-people-fill text-info"></i> Cupo Máximo:</th>
+                                        <td><strong>@Model.CupoMaximo</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <th><i class="bi bi-check-circle text-success"></i> Cupos Disponibles:</th>
+                                        <td>
+                                            <strong class="@(cuposDisponibles == 0 ? "text-danger" : cuposDisponibles <= 5 ? "text-warning" : "text-success")">
+                                                @cuposDisponibles
+                                            </strong>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th><i class="bi bi-graph-up text-primary"></i> Matriculados:</th>
+                                        <td><strong>@Model.Matriculas.Count</strong></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h5><i class="bi bi-clock"></i> Horario</h5>
+                            <div class="alert alert-light">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-calendar-event me-2" style="font-size: 2rem;"></i>
+                                    <div>
+                                        <strong>Inicio:</strong> @Model.HorarioInicio.ToString(@"hh\:mm")<br>
+                                        <strong>Fin:</strong> @Model.HorarioFin.ToString(@"hh\:mm")<br>
+                                        <small class="text-muted">
+                                            Duración: @((Model.HorarioFin - Model.HorarioInicio).TotalHours) horas
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Barra de progreso de ocupación -->
+                    <div class="mt-3">
+                        <h6>Ocupación del Curso</h6>
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar @(porcentajeOcupacion >= 90 ? "bg-danger" : porcentajeOcupacion >= 70 ? "bg-warning" : "bg-success")" 
+                                 role="progressbar" 
+                                 style="width: @porcentajeOcupacion%;" 
+                                 aria-valuenow="@porcentajeOcupacion" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                @porcentajeOcupacion%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Descripción adicional -->
+            <div class="card mt-3 shadow-sm">
+                <div class="card-body">
+                    <h5><i class="bi bi-journal-text"></i> Descripción del Curso</h5>
+                    <p class="text-muted">
+                        Este curso tiene una duración de @Model.Creditos créditos académicos y se imparte en horario
+                        de @Model.HorarioInicio.ToString(@"hh\:mm") a @Model.HorarioFin.ToString(@"hh\:mm").
+                    </p>
+                    <p class="text-muted">
+                        El código del curso es <strong>@Model.Codigo</strong> y actualmente cuenta con
+                        <strong>@cuposDisponibles cupos disponibles</strong> de un total de @Model.CupoMaximo.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna lateral - Acciones -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-pencil-square"></i> Inscripción</h5>
+                </div>
+                <div class="card-body">
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        @if (cuposDisponibles > 0)
+                        {
+                            <div class="alert alert-success">
+                                <i class="bi bi-check-circle"></i> 
+                                Hay cupos disponibles
+                            </div>
+                            
+                            <button type="button" class="btn btn-success btn-lg w-100 mb-2" disabled>
+                                <i class="bi bi-pencil-square"></i> Inscribirse
+                            </button>
+                            <small class="text-muted d-block text-center">
+                                (Funcionalidad disponible en Pregunta 3)
+                            </small>
+                        }
+                        else
+                        {
+                            <div class="alert alert-danger">
+                                <i class="bi bi-x-circle"></i> 
+                                No hay cupos disponibles
+                            </div>
+                            <button type="button" class="btn btn-secondary btn-lg w-100" disabled>
+                                <i class="bi bi-x-circle"></i> Sin Cupos
+                            </button>
+                        }
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle"></i> 
+                            Debes iniciar sesión para inscribirte
+                        </div>
+                        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary btn-lg w-100">
+                            <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+                        </a>
+                    }
+
+                    <hr>
+
+                    <a asp-action="Catalogo" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-arrow-left"></i> Volver al Catálogo
+                    </a>
+                </div>
+            </div>
+
+            <!-- Información adicional -->
+            <div class="card mt-3 shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="bi bi-lightbulb"></i> Información Importante</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled small">
+                        <li class="mb-2">
+                            <i class="bi bi-check text-success"></i> 
+                            La inscripción está sujeta a disponibilidad
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check text-success"></i> 
+                            No puedes inscribirte dos veces en el mismo curso
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check text-success"></i> 
+                            Verifica que no tengas conflictos de horario
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
