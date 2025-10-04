@@ -1,0 +1,112 @@
+@model PortalAcademico.Models.ViewModels.CursoFormViewModel
+
+@{
+    ViewData["Title"] = "Crear Curso";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Index">Panel Coordinador</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Crear Curso</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-plus-circle"></i> Crear Nuevo Curso
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="CrearCurso" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Codigo" class="form-label"></label>
+                                <input asp-for="Codigo" class="form-control" placeholder="Ej: MAT101" />
+                                <span asp-validation-for="Codigo" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Creditos" class="form-label"></label>
+                                <input asp-for="Creditos" type="number" class="form-control" min="1" max="10" />
+                                <span asp-validation-for="Creditos" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Nombre" class="form-label"></label>
+                            <input asp-for="Nombre" class="form-control" placeholder="Ej: Cálculo Diferencial" />
+                            <span asp-validation-for="Nombre" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="HorarioInicioStr" class="form-label"></label>
+                                <input asp-for="HorarioInicioStr" type="time" class="form-control" />
+                                <span asp-validation-for="HorarioInicioStr" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="HorarioFinStr" class="form-label"></label>
+                                <input asp-for="HorarioFinStr" type="time" class="form-control" />
+                                <span asp-validation-for="HorarioFinStr" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="CupoMaximo" class="form-label"></label>
+                                <input asp-for="CupoMaximo" type="number" class="form-control" min="1" max="200" />
+                                <span asp-validation-for="CupoMaximo" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check mt-4">
+                                    <input asp-for="Activo" class="form-check-input" type="checkbox" />
+                                    <label asp-for="Activo" class="form-check-label">
+                                        Curso activo (visible para estudiantes)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Crear Curso
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Información adicional -->
+            <div class="alert alert-info mt-3">
+                <h6><i class="bi bi-info-circle"></i> Información Importante</h6>
+                <ul class="mb-0">
+                    <li>El código del curso debe ser único</li>
+                    <li>El horario de fin debe ser posterior al horario de inicio</li>
+                    <li>Los créditos deben estar entre 1 y 10</li>
+                    <li>El cupo máximo debe ser entre 1 y 200 estudiantes</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

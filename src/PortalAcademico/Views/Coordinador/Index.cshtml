@@ -1,0 +1,175 @@
+@model List<PortalAcademico.Models.Curso>
+
+@{
+    ViewData["Title"] = "Panel de Coordinador";
+}
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2>
+                <i class="bi bi-gear-fill"></i> Panel de Coordinador
+            </h2>
+            <p class="text-muted">Gestión de cursos y matrículas</p>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Estadísticas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h3>@ViewBag.TotalCursos</h3>
+                    <p class="mb-0">Total Cursos</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h3>@ViewBag.CursosActivos</h3>
+                    <p class="mb-0">Cursos Activos</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body text-center">
+                    <h3>@ViewBag.MatriculasPendientes</h3>
+                    <p class="mb-0">Pendientes</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h3>@ViewBag.MatriculasConfirmadas</h3>
+                    <p class="mb-0">Confirmadas</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botón Crear Curso -->
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <a asp-action="CrearCurso" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Crear Nuevo Curso
+            </a>
+        </div>
+    </div>
+
+    <!-- Lista de Cursos -->
+    <div class="card">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0"><i class="bi bi-list"></i> Gestión de Cursos</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Código</th>
+                            <th>Nombre</th>
+                            <th>Créditos</th>
+                            <th>Horario</th>
+                            <th>Cupos</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var curso in Model)
+                        {
+                            <tr>
+                                <td><span class="badge bg-primary">@curso.Codigo</span></td>
+                                <td><strong>@curso.Nombre</strong></td>
+                                <td><i class="bi bi-star-fill text-warning"></i> @curso.Creditos</td>
+                                <td>
+                                    <small>
+                                        @curso.HorarioInicio.ToString(@"hh\:mm") - 
+                                        @curso.HorarioFin.ToString(@"hh\:mm")
+                                    </small>
+                                </td>
+                                <td>
+                                    @curso.CuposDisponibles / @curso.CupoMaximo
+                                    @if (curso.Matriculas.Any())
+                                    {
+                                        <br>
+                                        <small class="text-muted">
+                                            (@curso.Matriculas.Count(m => m.Estado == EstadoMatricula.Pendiente) pendientes)
+                                        </small>
+                                    }
+                                </td>
+                                <td>
+                                    @if (curso.Activo)
+                                    {
+                                        <span class="badge bg-success">Activo</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Inactivo</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="EditarCurso" asp-route-id="@curso.Id" 
+                                           class="btn btn-sm btn-outline-primary" title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a asp-action="GestionarMatriculas" asp-route-id="@curso.Id" 
+                                           class="btn btn-sm btn-outline-info" title="Gestionar Matrículas">
+                                            <i class="bi bi-people"></i>
+                                            @if (curso.Matriculas.Count(m => m.Estado == EstadoMatricula.Pendiente) > 0)
+                                            {
+                                                <span class="badge bg-warning text-dark">
+                                                    @curso.Matriculas.Count(m => m.Estado == EstadoMatricula.Pendiente)
+                                                </span>
+                                            }
+                                        </a>
+                                        @if (curso.Activo)
+                                        {
+                                            <form asp-action="DesactivarCurso" asp-route-id="@curso.Id" method="post" style="display:inline;">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                        onclick="return confirm('¿Desactivar este curso?')" title="Desactivar">
+                                                    <i class="bi bi-x-circle"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <form asp-action="ActivarCurso" asp-route-id="@curso.Id" method="post" style="display:inline;">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-outline-success" 
+                                                        onclick="return confirm('¿Activar este curso?')" title="Activar">
+                                                    <i class="bi bi-check-circle"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
