@@ -1,14 +1,12 @@
 ﻿@using System.Text.Json
 @inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - PortalAcademico</title>
-    <script type="importmap"></script>
+    <title>@ViewData["Title"] - Portal Académico</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/PortalAcademico.styles.css" asp-append-version="true" />
@@ -18,57 +16,82 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">PortalAcademico</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-mortarboard-fill"></i> Portal Académico
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" 
+                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
+                        <!-- Home -->
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-house-fill"></i> Inicio
+                            </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
+
+                        <!-- Catálogo (para todos) -->
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Cursos" asp-action="Catalogo">
                                 <i class="bi bi-book"></i> Catálogo
                             </a>
                         </li>
+
                         @if (User.Identity?.IsAuthenticated == true)
                         {
+                            <!-- Panel Coordinador (solo para coordinadores) -->
+                            @if (User.IsInRole("Coordinador"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Coordinador" asp-action="Index">
+                                        <i class="bi bi-gear-fill"></i> Panel Coordinador
+                                    </a>
+                                </li>
+                            }
+
+                            <!-- Mis Matrículas -->
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-controller="Cursos" asp-action="MisMatriculas">
                                     <i class="bi bi-list-check"></i> Mis Matrículas
                                 </a>
                             </li>
 
+                            <!-- Último Curso Visitado -->
                             var ultimoCursoJson = HttpContextAccessor.HttpContext?.Session.GetString("UltimoCursoVisitado");
                             if (!string.IsNullOrEmpty(ultimoCursoJson))
                             {
                                 try
                                 {
-                                    var ultimoCurso = JsonSerializer.Deserialize<dynamic>(ultimoCursoJson);
-                                    var cursoId = ((JsonElement)ultimoCurso).GetProperty("Id").GetInt32();
-                                    var cursoCodigo = ((JsonElement)ultimoCurso).GetProperty("Codigo").GetString();
-                                    var cursoNombre = ((JsonElement)ultimoCurso).GetProperty("Nombre").GetString();
+                                    var ultimoCurso = JsonSerializer.Deserialize<JsonElement>(ultimoCursoJson);
+                                    var cursoId = ultimoCurso.GetProperty("Id").GetInt32();
+                                    var cursoCodigo = ultimoCurso.GetProperty("Codigo").GetString();
+                                    var cursoNombre = ultimoCurso.GetProperty("Nombre").GetString();
 
                                     <li class="nav-item">
-                                        <a class="nav-link text-primary" asp-controller="Cursos" asp-action="Detalle" asp-route-id="@cursoId" title="@cursoNombre">
+                                        <a class="nav-link text-primary" asp-controller="Cursos" asp-action="Detalle" 
+                                        asp-route-id="@cursoId" title="@cursoNombre">
                                             <i class="bi bi-arrow-return-left"></i> Volver a <strong>@cursoCodigo</strong>
                                         </a>
                                     </li>
                                 }
-                                catch { /* Ignorar si hay error al deserializar */ }
+                                catch 
+                                { 
+                                    // Ignorar si hay error al deserializar
+                                }
                             }
                         }
+
                     </ul>
+                    
+                    <!-- Login/Logout Partial -->
                     <partial name="_LoginPartial" />
                 </div>
             </div>
         </nav>
     </header>
+    
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
@@ -76,10 +99,12 @@
     </div>
 
     <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - PortalAcademico - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        <div class="container text-center py-3">
+            &copy; 2025 - Portal Académico | Universidad | 
+            <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacidad</a>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

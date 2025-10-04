@@ -1,0 +1,221 @@
+@model PortalAcademico.Models.ViewModels.MatriculasGestionViewModel
+
+@{
+    ViewData["Title"] = "Gestionar Matrículas";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Index">Panel Coordinador</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Gestionar Matrículas</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Warning"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle"></i> @TempData["Warning"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Información del Curso -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">
+                <span class="badge bg-light text-primary">@Model.Curso.Codigo</span>
+                @Model.Curso.Nombre
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <strong><i class="bi bi-star-fill text-warning"></i> Créditos:</strong><br>
+                    @Model.Curso.Creditos
+                </div>
+                <div class="col-md-3">
+                    <strong><i class="bi bi-clock text-info"></i> Horario:</strong><br>
+                    @Model.Curso.HorarioInicio.ToString(@"hh\:mm") - @Model.Curso.HorarioFin.ToString(@"hh\:mm")
+                </div>
+                <div class="col-md-3">
+                    <strong><i class="bi bi-people text-success"></i> Cupos:</strong><br>
+                    @Model.Curso.CuposDisponibles / @Model.Curso.CupoMaximo disponibles
+                </div>
+                <div class="col-md-3">
+                    <strong><i class="bi bi-list-check text-primary"></i> Matrículas:</strong><br>
+                    @Model.Matriculas.Count total
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas de Matrículas -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-warning text-dark">
+                <div class="card-body text-center">
+                    <h3>@Model.Matriculas.Count(m => m.Estado == EstadoMatricula.Pendiente)</h3>
+                    <p class="mb-0"><i class="bi bi-clock-history"></i> Pendientes</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h3>@Model.Matriculas.Count(m => m.Estado == EstadoMatricula.Confirmada)</h3>
+                    <p class="mb-0"><i class="bi bi-check-circle"></i> Confirmadas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-danger text-white">
+                <div class="card-body text-center">
+                    <h3>@Model.Matriculas.Count(m => m.Estado == EstadoMatricula.Cancelada)</h3>
+                    <p class="mb-0"><i class="bi bi-x-circle"></i> Canceladas</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Matrículas -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0"><i class="bi bi-list-ul"></i> Lista de Matrículas</h5>
+        </div>
+        <div class="card-body">
+            @if (Model.Matriculas.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Estudiante</th>
+                                <th>Fecha Inscripción</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var matricula in Model.Matriculas)
+                            {
+                                <tr>
+                                    <td>
+                                        <i class="bi bi-person-fill"></i>
+                                        <strong>@matricula.UsuarioEmail</strong>
+                                    </td>
+                                    <td>
+                                        <small>@matricula.FechaRegistro.ToString("dd/MM/yyyy HH:mm")</small>
+                                    </td>
+                                    <td>
+                                        @switch (matricula.Estado)
+                                        {
+                                            case EstadoMatricula.Pendiente:
+                                                <span class="badge bg-warning text-dark">
+                                                    <i class="bi bi-clock-history"></i> Pendiente
+                                                </span>
+                                                break;
+                                            case EstadoMatricula.Confirmada:
+                                                <span class="badge bg-success">
+                                                    <i class="bi bi-check-circle"></i> Confirmada
+                                                </span>
+                                                break;
+                                            case EstadoMatricula.Cancelada:
+                                                <span class="badge bg-danger">
+                                                    <i class="bi bi-x-circle"></i> Cancelada
+                                                </span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (matricula.Estado == EstadoMatricula.Pendiente)
+                                        {
+                                            <div class="btn-group" role="group">
+                                                <form asp-action="ConfirmarMatricula" method="post" style="display:inline;">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@matricula.MatriculaId" />
+                                                    <input type="hidden" name="cursoId" value="@Model.Curso.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-success" 
+                                                            onclick="return confirm('¿Confirmar esta matrícula?')">
+                                                        <i class="bi bi-check-circle"></i> Confirmar
+                                                    </button>
+                                                </form>
+                                                <form asp-action="CancelarMatricula" method="post" style="display:inline;">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@matricula.MatriculaId" />
+                                                    <input type="hidden" name="cursoId" value="@Model.Curso.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-danger" 
+                                                            onclick="return confirm('¿Cancelar esta matrícula?')">
+                                                        <i class="bi bi-x-circle"></i> Cancelar
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        }
+                                        else if (matricula.Estado == EstadoMatricula.Confirmada)
+                                        {
+                                            <form asp-action="CancelarMatricula" method="post" style="display:inline;">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@matricula.MatriculaId" />
+                                                <input type="hidden" name="cursoId" value="@Model.Curso.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                        onclick="return confirm('¿Cancelar esta matrícula confirmada?')">
+                                                    <i class="bi bi-x-circle"></i> Cancelar
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <form asp-action="ConfirmarMatricula" method="post" style="display:inline;">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@matricula.MatriculaId" />
+                                                <input type="hidden" name="cursoId" value="@Model.Curso.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-success" 
+                                                        onclick="return confirm('¿Reactivar esta matrícula?')">
+                                                    <i class="bi bi-arrow-clockwise"></i> Reactivar
+                                                </button>
+                                            </form>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info text-center py-5">
+                    <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                    <h4 class="mt-3">No hay matrículas registradas</h4>
+                    <p>Este curso aún no tiene estudiantes inscritos</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver al Panel
+        </a>
+    </div>
+</div>
