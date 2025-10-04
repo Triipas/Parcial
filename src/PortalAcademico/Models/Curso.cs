@@ -37,7 +37,14 @@ namespace PortalAcademico.Models
         // Navegación
         public ICollection<Matricula> Matriculas { get; set; } = new List<Matricula>();
 
-        // Propiedad calculada para cupos disponibles
-        public int CuposDisponibles => CupoMaximo - Matriculas.Count(m => m.Estado == EstadoMatricula.Confirmada);
+        // ✅ CORRECCIÓN: Contar Confirmadas Y Pendientes (las canceladas NO ocupan cupo)
+        public int CuposDisponibles => CupoMaximo - Matriculas.Count(m => 
+            m.Estado == EstadoMatricula.Confirmada || 
+            m.Estado == EstadoMatricula.Pendiente);
+
+        // Propiedad adicional útil
+        public int MatriculasActivas => Matriculas.Count(m => 
+            m.Estado == EstadoMatricula.Confirmada || 
+            m.Estado == EstadoMatricula.Pendiente);
     }
 }
