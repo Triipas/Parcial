@@ -4,12 +4,25 @@
     ViewData["Title"] = "Catálogo de Cursos";
 }
 
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-12">
-            <h2 class="mb-4">
-                <i class="bi bi-book"></i> Catálogo de Cursos
-            </h2>
+<div class="row">
+    <div class="col-md-12">
+        <h2 class="mb-4">
+            <i class="bi bi-book"></i> Catálogo de Cursos
+            
+            @* ✅ INDICADOR DE CACHE *@
+            @if (ViewBag.DesdeCache == true)
+            {
+                <span class="badge bg-success ms-2" title="Datos obtenidos del cache Redis">
+                    <i class="bi bi-lightning-charge-fill"></i> Cache
+                </span>
+            }
+            else if (ViewBag.DesdeCache == false)
+            {
+                <span class="badge bg-info ms-2" title="Datos obtenidos de la base de datos">
+                    <i class="bi bi-database"></i> BD
+                </span>
+            }
+        </h2>
 
             @if (TempData["Success"] != null)
             {

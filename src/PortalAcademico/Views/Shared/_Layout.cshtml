@@ -1,4 +1,8 @@
-﻿<!DOCTYPE html>
+﻿@using System.Text.Json
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -39,6 +43,25 @@
                                     <i class="bi bi-list-check"></i> Mis Matrículas
                                 </a>
                             </li>
+
+                            var ultimoCursoJson = HttpContextAccessor.HttpContext?.Session.GetString("UltimoCursoVisitado");
+                            if (!string.IsNullOrEmpty(ultimoCursoJson))
+                            {
+                                try
+                                {
+                                    var ultimoCurso = JsonSerializer.Deserialize<dynamic>(ultimoCursoJson);
+                                    var cursoId = ((JsonElement)ultimoCurso).GetProperty("Id").GetInt32();
+                                    var cursoCodigo = ((JsonElement)ultimoCurso).GetProperty("Codigo").GetString();
+                                    var cursoNombre = ((JsonElement)ultimoCurso).GetProperty("Nombre").GetString();
+
+                                    <li class="nav-item">
+                                        <a class="nav-link text-primary" asp-controller="Cursos" asp-action="Detalle" asp-route-id="@cursoId" title="@cursoNombre">
+                                            <i class="bi bi-arrow-return-left"></i> Volver a <strong>@cursoCodigo</strong>
+                                        </a>
+                                    </li>
+                                }
+                                catch { /* Ignorar si hay error al deserializar */ }
+                            }
                         }
                     </ul>
                     <partial name="_LoginPartial" />

@@ -14,10 +14,31 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
-    .AddRoles<IdentityRole>() // ⚠️ IMPORTANTE: Agregar soporte para roles
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddControllersWithViews();
+
+// ✅ CONFIGURAR REDIS PARA CACHE DISTRIBUIDO
+var redisConnectionString = builder.Configuration.GetValue<string>("Redis:ConnectionString") 
+    ?? "localhost:6379";
+
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = redisConnectionString;
+    options.InstanceName = builder.Configuration.GetValue<string>("Redis:InstanceName") ?? "PortalAcademico:";
+});
+
+// ✅ CONFIGURAR SESIONES CON REDIS
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.Name = ".PortalAcademico.Session";
+});
+
+builder.Services.AddScoped<PortalAcademico.Services.ICacheService, PortalAcademico.Services.CacheService>();
 
 var app = builder.Build();
 
@@ -43,6 +64,9 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+// ✅ IMPORTANTE: UseSession debe ir antes de UseAuthorization
+app.UseSession();
 
 app.UseAuthorization();
 
